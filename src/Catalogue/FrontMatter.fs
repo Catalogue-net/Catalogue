@@ -37,6 +37,8 @@ type FrontMatter =
       NoMarkdown : bool
       /// Tags specified on the post
       Tags : string []
+      /// Relative path of the file from the root directory
+      RelativePath : string
       /// Original markdown content of the page
       MarkDown : StringBuilder
       /// Content without front matter
@@ -81,7 +83,8 @@ module Links =
     /// Create a relative path to a file from a directory
     /// This is useful for mapping input folder files to output folder
     let getRelativePath(filePath: string) (rootDir : string) =
-        (new Uri(rootDir)).MakeRelativeUri(new Uri(filePath)).OriginalString
+        //(new Uri(rootDir)).MakeRelativeUri(new Uri(filePath)).OriginalString
+        filePath.Replace(rootDir, String.Empty)
 
 module TableOfContents = 
     open System.Collections.Generic
@@ -195,21 +198,21 @@ module FrontMatter =
 
     /// Generates front matter along with the parsed meta data
     /// This is a common entry point for both Page and Posts
-    let getFrontMatter (settings : Settings) (layouts : Map<string, string>) (isPage : bool) (content : string) = 
+    let getFrontMatter (relativePath : string) (settings : Settings) (layouts : Map<string, string>) (isPage : bool) (content : string) = 
         trial { 
             let! (vars, content) = parse content
             let! (id, title) = getIdAndTitle vars
             let! permalink = getPermalink vars settings isPage
             let! layout = getLayout vars settings isPage layouts
             let! area = getArea vars settings
-            let order = getOrder vars
-            
+            let order = getOrder vars 
             let fm = 
                 { Vars = vars
                   Order = order
                   ExcludeFromSingleFile = getExcludeFromSingleFile vars
                   ExcludeFromSearchIndex = getExcludeFromSearchIndex vars
                   Id = id
+                  RelativePath = relativePath
                   Title = title
                   Permalink = permalink
                   Link = permalink

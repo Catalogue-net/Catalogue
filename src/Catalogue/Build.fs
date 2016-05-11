@@ -126,6 +126,7 @@ module Build =
         else pageContext.Remove("previouspage") |> ignore
         if index < pageCount && index <> -1 then pageContext.["nextpage"] <- context.Pages.[index + 1].ToJobject()
         else pageContext.Remove("nextpage") |> ignore
+        pageContext.["editmelink"] <- JToken.FromObject(context.Settings.RepositoryEditMeLink + page.RelativePath)
         let mutable renderedOutput = context.JSEngine.HandleBars.Transform(page.Layout, pageContext)
         if context.BuildTasks.LiveReload then 
             renderedOutput <- headRegex.Replace(renderedOutput, Server.reloadScript, 1)

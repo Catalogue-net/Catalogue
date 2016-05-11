@@ -31,7 +31,9 @@ module Context =
     /// Scans all the pages from the pages folder for meta data and generates initial page objects
     let scanAllPages (rd : RootDirectory) (settings : Settings) (layouts : Map<string, string>) = 
         loopFilesExt Extension.md (rd.Path +/ SpecialDir.pages)
-        |> Seq.map (fun filePath -> (readFile filePath >>= FrontMatter.getFrontMatter settings layouts true, filePath))
+        |> Seq.map (fun filePath -> 
+            let relativePath = Links.getRelativePath filePath rd.Path
+            (readFile filePath >>= FrontMatter.getFrontMatter relativePath settings layouts true, filePath))
         |> Seq.filter (fun (result, filePath) -> 
                match result with
                | Ok _ -> true
