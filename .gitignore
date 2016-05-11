@@ -1,0 +1,10 @@
+src/.vs/
+src/Catalogue/JsLibrary/node_modules/
+src/Catalogue/bin/
+src/bin/
+src/Catalogue.Tests/bin/
+src/Catalogue.Tests/obj/
+src/Catalogue/obj/
+src/packages/
+src/obj/
+src/Catalogue/JsLibrary/bundle.js

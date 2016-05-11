@@ -1,0 +1,33 @@
+{
+  "name": "catalogue-js",
+  "version": "0.0.1",
+  "description": "Js dependencies for Catalogue",
+  "main": "index.js",
+  "scripts": {
+    "build": "browserify catalogue.js -o bundle.js"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "browserify": "^13.0.0",
+    "highlightjs": "^8.7.0",
+    "prism-js": "^1.0.0",
+    "markdown-it": "^6.0.1",
+    "markdown-it-abbr": "^1.0.3",
+    "markdown-it-alerts": "^0.1.0",
+    "markdown-it-anchor": "^2.5.0",
+    "markdown-it-fontawesome": "^0.2.0",
+    "markdown-it-footnote": "^2.0.0",
+    "markdown-it-table-of-contents": "^0.2.0",
+    "markdown-it-container": "^2.0.0",
+    "handlebars": "4.0.5",
+    "lunr": "^0.7.0"
+  },
+  "devDependencies": {
+    "bootstrap": "3.3.6",
+    "font-awesome": "4.5.0",
+    "jquery": "2.2.3",
+    "mermaid": "^0.5.8",
+    "awesomplete": "^1.1.0"
+  }
+}
