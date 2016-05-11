@@ -111,8 +111,6 @@ type Settings() =
     [<JsonIgnoreAttribute>]
     member val Areas = [| Area.HomeArea |] with get, set
     
-    member val NavBarCenterLinks : PageLinks [] = [||] with get, set
-    member val NavBarRightLinks : PageLinks [] = [||] with get, set
     member val Development = BuildTasks.DevSettings() with get, set
     member val HttpServerPort = 8080 with get, set
     member val Production = new BuildTasks() with get, set
