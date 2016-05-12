@@ -285,11 +285,11 @@ module Build =
                 let temppath = System.IO.Path.Combine(dstPath, file.Name)
                 // Skip all files starting with _
                 if not <| file.Name.StartsWith("_") then file.CopyTo(temppath, true) |> ignore
-                for subdir in srcDir.GetDirectories() do
-                    /// Skip directories which starts with '_'
-                    if not <| subdir.Name.StartsWith("_") then 
-                        let dstSubDir = System.IO.Path.Combine(dstPath, subdir.Name)
-                        directoryCopy subdir.FullName dstSubDir
+            for subdir in srcDir.GetDirectories() do
+                /// Skip directories which starts with '_'
+                if not <| subdir.Name.StartsWith("_") then 
+                    let dstSubDir = System.IO.Path.Combine(dstPath, subdir.Name)
+                    directoryCopy subdir.FullName dstSubDir
         directoryCopy context.Root.Path context.Settings.BuildOutput
         context
     
