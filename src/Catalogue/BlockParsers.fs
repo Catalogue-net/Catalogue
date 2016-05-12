@@ -39,34 +39,72 @@ module BlockParsers =
                | Ok(c, _) -> page.Content.Replace(matchedText, c) |> ignore
                | Bad err -> printWarning "File: %s not found in the _includes folder. Page id: %s" includeFileName page.Id)
 
-    (* Matches the include block in the input file
+    [<CLIMutable>]
+    type LinkMatch =
+        {
+            [<JsonIgnore>]
+            MatchedText : string
+            [<JsonIgnore>]
+            PageId : string
+            [<JsonIgnore>]
+            AnchorId: string
+            [<JsonPropertyAttribute("title")>]
+            mutable Title: string
+            [<JsonPropertyAttribute("url")>]
+            mutable Link : string
+        }
+        static member Create(mt, pageId, anchor, title) =
+            {
+                MatchedText = mt
+                PageId = pageId
+                AnchorId = anchor
+                Title = title
+                Link = ""
+            }
+
+    (* Matches the links block in the input file
     A simple example is
 
-        ::: include abc.md :::
-    
-    Note: This expects that there is a blank line before the tag. This is done to avoid unnecessary matching.
-    We can straight away capture the result of group 1.
+        [[id-of-page#anchor|Title]]
+        
+        [\n| ]\[\[([\w_-]+)(#[\w_\-\/]+)?(\|([\w ]+))?]]
+        Capture group 1: link-id
+        Capture group 2: anchor-id
+        Capture group 4: title    
     *)
     let linksRegex = 
-        new Regex(@"[\n| ]\[\[([\w_-]+)]]", RegexOptions.Compiled ||| RegexOptions.CultureInvariant)
+        new Regex(@"[\n| ]\[\[([\w_-]+)(#[\w_\-\/]+)?(\|([\w ]+))?]]", RegexOptions.Compiled ||| RegexOptions.CultureInvariant)
     
     /// Parses the input for include tag
     let parseLinks (content : string) = 
         linksRegex.Matches(content)
         |> Seq.cast
-        |> Seq.map (fun (m : Match) -> (m.Groups.[0].Value, m.Groups.[1].Value))
+        |> Seq.map (fun (m : Match) -> 
+            LinkMatch.Create(m.Groups.[0].Value, m.Groups.[1].Value, m.Groups.[2].Value, m.Groups.[4].Value))
         |> Seq.toArray
     
     /// Processes an include block by updating the page content
     let processLinks (context : Context) (page : FrontMatter) = 
+        context.HandlebarsContext.Remove("internallinks") |> ignore
+        let links = new JArray()
         page.Content.ToString()
         |> parseLinks
-        |> Array.iter (fun (matchedText, pageId) -> 
-               match context.LinkMap.TryFind(pageId) with
+        |> Array.iter (fun linkMatch -> 
+               match context.LinkMap.TryFind(linkMatch.PageId) with
                | Some(fm) ->
-                    page.Content.Replace(matchedText, sprintf " [%s](%s)" fm.Title fm.Permalink) |> ignore
-               | None -> printWarning "Page id: %s. Unable to find page with id %s to generate a link." page.Id pageId)
-                   
+                    linkMatch.Title <- 
+                        if String.IsNullOrWhiteSpace linkMatch.Title then
+                            fm.Title
+                        else
+                            linkMatch.Title
+                    linkMatch.Link <- sprintf "%s%s" fm.Permalink linkMatch.AnchorId
+                    page.Content.Replace(linkMatch.MatchedText, sprintf " [%s](%s)" linkMatch.Title linkMatch.Link) |> ignore
+                    // Add the link to the pageContext so that it can be used by the see also section
+                    links.Add(JToken.FromObject(linkMatch))
+               | None -> printWarning "Page id: %s. Unable to find page with id %s to generate a link." page.Id linkMatch.PageId)
+        if links.Count <> 0 then
+            context.HandlebarsContext.Add("internallinks", links)
+
     (* Matches the render block in the input file
     A simple example is
     
