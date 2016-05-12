@@ -85,11 +85,16 @@ module Context =
         
         let validatePermalinkIsUnique (page : FrontMatter) = 
             if map.ContainsKey(page.Permalink) then 
-                failwithf 
-                    "Duplicate permalink specified. There is another page with the same permalink. Other page id: %s." 
-                    (map.[page.Permalink].Id)
+                printError "Page id: %s. There is another page with the same permalink." (map.[page.Permalink].Id)
             else map <- map.Add(page.Permalink, page)
+
+        let validatePageIdIsUnique (page: FrontMatter) =
+            if map.ContainsKey(page.Id) then 
+                printError "Page id: %s. There is another page with the same id." (map.[page.Id].Id)
+            else map <- map.Add(page.Id, page)
+
         pages |> Array.iter validatePermalinkIsUnique
+        pages |> Array.iter validatePageIdIsUnique
         map
     
     /// Builds a mapping between categories and associated pages

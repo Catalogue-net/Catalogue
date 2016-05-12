@@ -37,8 +37,36 @@ module BlockParsers =
         |> Array.iter (fun (matchedText, includeFileName) -> 
                match readFile <| context.Root.Path +/ SpecialDir.includes +/ includeFileName with
                | Ok(c, _) -> page.Content.Replace(matchedText, c) |> ignore
-               | Bad err -> printfn "File: %s not found in the _includes folder. Page id: %s" includeFileName page.Id)
+               | Bad err -> printWarning "File: %s not found in the _includes folder. Page id: %s" includeFileName page.Id)
+
+    (* Matches the include block in the input file
+    A simple example is
+
+        ::: include abc.md :::
     
+    Note: This expects that there is a blank line before the tag. This is done to avoid unnecessary matching.
+    We can straight away capture the result of group 1.
+    *)
+    let linksRegex = 
+        new Regex(@"[\n| ]\[\[([\w_-]+)]]", RegexOptions.Compiled ||| RegexOptions.CultureInvariant)
+    
+    /// Parses the input for include tag
+    let parseLinks (content : string) = 
+        linksRegex.Matches(content)
+        |> Seq.cast
+        |> Seq.map (fun (m : Match) -> (m.Groups.[0].Value, m.Groups.[1].Value))
+        |> Seq.toArray
+    
+    /// Processes an include block by updating the page content
+    let processLinks (context : Context) (page : FrontMatter) = 
+        page.Content.ToString()
+        |> parseLinks
+        |> Array.iter (fun (matchedText, pageId) -> 
+               match context.LinkMap.TryFind(pageId) with
+               | Some(fm) ->
+                    page.Content.Replace(matchedText, sprintf " [%s](%s)" fm.Title fm.Permalink) |> ignore
+               | None -> printWarning "Page id: %s. Unable to find page with id %s to generate a link." page.Id pageId)
+                   
     (* Matches the render block in the input file
     A simple example is
     
@@ -152,8 +180,9 @@ module BlockParsers =
         |> Array.iter transform
     
     /// Process the input for blocks and transform the page output
-    let processBlocks (context : Context) (page : FrontMatter) = 
+    let processPreMarkDownBlocks (context : Context) (page : FrontMatter) = 
         processInclude context page
+        processLinks context page
 
     let processPostMarkDownBlocks (context : Context) (page : FrontMatter) = 
         processDiagram context page
