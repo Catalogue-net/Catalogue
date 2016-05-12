@@ -19,6 +19,5 @@ let main argv =
                               |___/            
 """
     log "Catalogue v%s" <| Assembly.GetExecutingAssembly().GetName().Version.ToString()
-    printLine()
     Build.buildSite (argv)
     0

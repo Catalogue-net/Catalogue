@@ -131,10 +131,6 @@ module Settings =
         let buildFolderPath = getAbsolutePath settings.BuildOutput
         settings.BuildOutput <- buildFolderPath
         Directory.CreateDirectory buildFolderPath |> ignore
-        let serializer = new YamlDotNet.Serialization.Serializer()
-        let writer = new StringWriter()
-        serializer.Serialize(writer, settings)
-        Console.WriteLine(writer.ToString())
         //emptyDir buildFolderPath
         settings.Areas |> Array.iteri (fun index area -> area.Order <- index)
         ok settings

@@ -41,7 +41,7 @@ module Server =
 """
     
     let startWebServer (outputFolder) = 
-        printfn "starting webserver: %s" (outputFolder)
+        printInfo "Starting webserver: %s" (outputFolder)
         let serverConfig = 
             { defaultConfig with homeFolder = Some(outputFolder)
                                  bindings = [ HttpBinding.mk HTTP IPAddress.Loopback 8080us ] }
@@ -77,7 +77,7 @@ module Server =
         startWebServerAsync serverConfig app
         |> snd
         |> Async.Start
-        printfn "Started server on port:%i" 8080
+        printInfo "Started server on port:%i" 8080
 
 module Build = 
     let private htmlMinifier = new HtmlMinifier()
@@ -86,11 +86,13 @@ module Build =
         let minified = htmlMinifier.Minify(content)
         if minified.Errors.Count = 0 && minified.Warnings.Count = 0 then minified.MinifiedContent
         else 
-            printfn "Encountered HTML minification errors with page: %s" page.Id
+            printLine()
+            printWarning "Page:%s. Encountered HTML minification errors" page.Id
             minified.Errors 
-            |> Seq.iter (fun e -> printfn "Line:%i, Column:%i:Message:%s" e.LineNumber e.ColumnNumber e.Message)
+            |> Seq.iter (fun e -> printWarning "Line:%i, Column:%i:Message:%s" e.LineNumber e.ColumnNumber e.Message)
             minified.Warnings 
-            |> Seq.iter (fun e -> printfn "Line:%i, Column:%i:Message:%s" e.LineNumber e.ColumnNumber e.Message)
+            |> Seq.iter (fun e -> printWarning "Line:%i, Column:%i:Message:%s" e.LineNumber e.ColumnNumber e.Message)
+            printLine()
             content
     
     let headRegex = new Regex("</head>", RegexOptions.Compiled ||| RegexOptions.IgnoreCase)
@@ -293,20 +295,28 @@ module Build =
         directoryCopy context.Root.Path context.Settings.BuildOutput
         context
     
+    let buildSteps =
+        [|
+            (registerAllPartials, "Register all partials")
+            (compileAllLayouts, "Compile all layouts")
+            (generateCss, "Process CSS")
+            (generateJs, "Process JavaScript")
+            (generatePages, "Generate Pages")
+            (generateSearchIndex, "Generate Search Index")
+            (generateSinglePageDoc, "Generate Single page document")
+            (generateSiteMap, "Generate site-map")
+            (copyAssets, "Copy assets")
+        |]
+
     /// Build the whole site from the generated context
     let build (rootFolder : RootDirectory) (context : Option<Context>) (devMode : bool) = 
         let settings = Settings.create rootFolder |> printAndExit
-        Context.createContext rootFolder settings devMode context
-        |> registerAllPartials
-        |> compileAllLayouts
-        |> generateCss
-        |> generateJs
-        |> generatePages
-        |> generateSearchIndex
-        |> generateSinglePageDoc
-        |> generateSiteMap
-        |> copyAssets
-    
+        let mutable newContext = Context.createContext rootFolder settings devMode context      
+        for (step, desc) in buildSteps do
+            printHeader desc
+            newContext <- step(newContext)
+        newContext
+
     let fileWatcher (rootFolder : RootDirectory) (context : Context) = 
         let watchChanges (changes : seq<FileChange>) = 
             for c in changes do

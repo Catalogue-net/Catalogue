@@ -30,6 +30,7 @@ type Context =
 module Context = 
     /// Scans all the pages from the pages folder for meta data and generates initial page objects
     let scanAllPages (rd : RootDirectory) (settings : Settings) (layouts : Map<string, string>) = 
+        printHeader "Process pages for front matter"
         loopFilesExt Extension.md (rd.Path +/ SpecialDir.pages)
         |> Seq.map (fun filePath -> 
             let relativePath = Links.getRelativePath filePath rd.Path
@@ -38,8 +39,7 @@ module Context =
                match result with
                | Ok _ -> true
                | Bad err -> 
-                   printWarning "Unable to process page:%s" filePath
-                   printWarning "%s" (String.Join(" ", err))
+                   printWarning "Page:%s. %s" filePath (String.Join(" ", err))
                    false)
         |> Seq.map (fun (result, filePath) -> result |> returnOrFail)
         // The below is necessary to get the previous and next page order right.

@@ -25,6 +25,7 @@ module PrintHelpers =
     let printWarning fmt = cprintfn ConsoleColor.Yellow fmt
     let printError fmt = cprintfn ConsoleColor.Red fmt
     let printVerbose fmt = cprintfn ConsoleColor.Green fmt
+    let printInfo fmt = cprintfn ConsoleColor.White fmt
     let log fmt = cprintfn ConsoleColor.White fmt
 
     let printAndExit (error) = 
@@ -32,14 +33,12 @@ module PrintHelpers =
         Environment.Exit(-1)
     
     /// Traces a line
-    let printLine() = printfn "---------------------------------------------------------------------"
+    let printLine() = printVerbose "---------------------------------------------------------------------"
     
     /// Traces a header
     let printHeader name = 
-        printf ""
         printLine()
-        printf name
-        printLine()
+        printVerbose "%s" name
     
     /// Traces an exception details (in red)
     let printException (ex : Exception) = exceptionAndInnersToString ex |> printError "%s"
