@@ -1,6 +1,6 @@
 var MarkdownIt = require("markdown-it");
 var hljs = require('./node_modules/highlightjs/highlight.pack.js');
-var Prism = require('./prism.js');
+//var Prism = require('./prism.js');
 
 //let langs = hljs.listLanguages();
 //for (i = 0; i < langs.length; i++) {
@@ -66,22 +66,22 @@ function highlightUsingHighlightJs (str, lang) {
     }
     return '';
 }
-function highlightUsingPrismJs (str, lang) {
-    if (lang && 0 !== lang.length) {
-        if (lang in Prism.languages) {
-            try {
-                return Prism.highlight(str, Prism.languages[lang]);
-            } catch (err) {
-                Console.WriteLine("PrismJS encountered an error: " + err);
-            }
-        } else {
-            Console.WriteLine("PrismJS does not contain the definition of language: " + lang);
-        }
-    } else {
-        Console.WriteLine("No valid language value passed to PrismJS.");
-    }
-    return '';
-}
+//function highlightUsingPrismJs (str, lang) {
+//    if (lang && 0 !== lang.length) {
+//        if (lang in Prism.languages) {
+//            try {
+//                return Prism.highlight(str, Prism.languages[lang]);
+//            } catch (err) {
+//                Console.WriteLine("PrismJS encountered an error: " + err);
+//            }
+//        } else {
+//            Console.WriteLine("PrismJS does not contain the definition of language: " + lang);
+//        }
+//    } else {
+//        Console.WriteLine("No valid language value passed to PrismJS.");
+//    }
+//    return '';
+//}
 
 var md = new MarkdownIt({
     html: true,

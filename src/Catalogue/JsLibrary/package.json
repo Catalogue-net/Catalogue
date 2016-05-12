@@ -23,11 +23,5 @@
     "handlebars": "4.0.5",
     "lunr": "^0.7.0"
   },
-  "devDependencies": {
-    "bootstrap": "3.3.6",
-    "font-awesome": "4.5.0",
-    "jquery": "2.2.3",
-    "mermaid": "^0.5.8",
-    "awesomplete": "^1.1.0"
-  }
+  "devDependencies": { }
 }
