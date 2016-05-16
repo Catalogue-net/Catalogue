@@ -18,6 +18,7 @@
     "markdown-it-anchor": "^2.5.0",
     "markdown-it-fontawesome": "^0.2.0",
     "markdown-it-footnote": "^2.0.0",
+    "markdown-it-deflist": "2.0.1",
     "markdown-it-table-of-contents": "^0.2.0",
     "markdown-it-container": "^2.0.0",
     "handlebars": "4.0.5",

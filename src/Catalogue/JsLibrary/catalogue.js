@@ -98,6 +98,7 @@ md.use(require("markdown-it-anchor"), {
 md.use(require("markdown-it-abbr"));
 md.use(require("markdown-it-footnote"));
 md.use(require("markdown-it-fontawesome"));
+md.use(require("markdown-it-deflist"));
 md.use(require("./callout.js"));
 
 // Support for mermaid
