@@ -164,10 +164,9 @@ module BlockParsers =
                     let result = context.JSEngine.HandleBars.Transform(block.PartialName + "_partial", d)
                     page.Content.Replace(block.MatchedText, result) |> ignore
                 | false -> 
-                    printfn "Partial: %s not found in the _partials folder. Page id: %s" block.PartialName page.Id
+                    printWarning "Page id: %s. Partial: %s not found in the _partials folder." page.Id block.PartialName
             | None -> 
-                printfn "No data specified for the render tag containing partial: %s for page: %s. BlockInfo:%A" block.PartialName
-                    page.Id block
+                printWarning "Page id: %s. No data specified for the render tag containing partial: %s. Data: %s." page.Id block.PartialName (block.Data.TrimEnd())
         page.Content.ToString()
         |> parseRender
         |> Array.iter transform
