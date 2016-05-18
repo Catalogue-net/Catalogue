@@ -58,6 +58,12 @@ type JsEngineWrapper =
       MarkdownParser : IMarkdownParser
       Lunr : ILunr }
 
+/// Simple wrapper to provide printing from JavaScript
+type Print() =
+    static member Error(err) = printError "%s" err
+    static member Warning(err) = printWarning "%s" err
+    static member Verbose(msg) = printVerbose "%s" msg
+     
 [<Sealed>]
 /// Wraps markdown-it JavaScript parser using Google V8 engine and exposes
 /// helper methods to render markdown
@@ -80,7 +86,8 @@ type JavaScriptEngine() =
         // define a window object so that packages like highlightjs can use it to register 
         // the global object.
         engine.Execute("window = this")
-        engine.AddHostType("Console", typeof<System.Console>)
+        //engine.AddHostType("Console", typeof<System.Console>)
+        engine.AddHostType("Print", typeof<Print>)
         engine.Execute(File.ReadAllText(rootPath +/ "JsLibrary/bundle.js")) |> ignore
 
 

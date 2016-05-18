@@ -56,13 +56,13 @@ function highlightUsingHighlightJs (str, lang) {
             try {
                 return hljs.highlight(lang, str, true).value;
             } catch (err) {
-                Console.WriteLine("hljs encountered an error: " + err);
+                Print.Warning("Page id:" + pageName + ". hljs encountered an error: " + err);
             }
         } else {
-            Console.WriteLine("hljs does not contain the definition of language: " + lang);
+            Print.Warning("Page id:" + pageName + ". hljs does not contain the definition of language: " + lang);
         }
     } else {
-        Console.WriteLine("No valid language value passed to hljs.");
+        //Print.Warning("Page id:" + pageName + ". No valid language value passed to hljs.");
     }
     return '';
 }
@@ -104,7 +104,6 @@ md.use(require("./callout.js"));
 // Support for mermaid
 md.use(require('markdown-it-container'), 'mermaid', {
     render: function (tokens, idx) {
-        Console.WriteLine(tokens[idx].info);
         var m = tokens[idx].info.trim().match(/^mermaid\s+(.*)$/);
         if (tokens[idx].nesting === 1) {
             return '<div class="mermaid">' + tokens[idx].info.trim();
@@ -156,13 +155,17 @@ function compile(templateName, template) {
 
 function transform(templateName, data) {
     if (templates[templateName] === undefined) {
-        return "Template:" + templateName + " not found.";
+        var error = "Template:" + templateName + " not found.";
+        Print.Error(error);
+        return error;
     }
 
     try {
         return templates[templateName](JSON.parse(data));
     } catch (e) {
-        return "Template:" + templateName + " cannot be used. It could be due to errors in template or it is not registered correctly. Error:" + e;
+        var error = "Template:" + templateName + " cannot be used. It could be due to errors in template or it is not registered correctly. Error:" + e;
+        Print.Error(error);
+        return error;
     }
 };
 
@@ -172,6 +175,7 @@ function compileAndTransform(templateContent, data) {
         var template = handlebars.compile(templateContent);
         return template(JSON.parse(data));
     } catch (e) {
+        Print.Error("Cannot compile the template. Error:" + e);
         return "Cannot compile the template. Error:" + e;
     }
 };
@@ -248,13 +252,13 @@ handlebars.registerHelper("x", function (expression, options) {
     try {
         fn = Function.apply(this, ["window", "return " + expression + " ;"]);
     } catch (e) {
-        Console.WriteLine("{{x " + expression + "}} has invalid javascript", e);
+        Print.Warning("{{x " + expression + "}} has invalid javascript", e);
     }
 
     try {
         result = fn.call(this, window);
     } catch (e) {
-        Console.WriteLine("{{x " + expression + "}} hit a runtime error", e);
+        Print.Warning("{{x " + expression + "}} hit a runtime error", e);
     }
     return result;
 });
