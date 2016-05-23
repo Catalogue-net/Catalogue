@@ -309,9 +309,9 @@ module Build =
         |]
 
     /// Build the whole site from the generated context
-    let build (rootFolder : RootDirectory) (context : Option<Context>) (devMode : bool) = 
-        let settings = Settings.create rootFolder |> printAndExit
-        let mutable newContext = Context.createContext rootFolder settings devMode context      
+    let build (rootFolder : RootDirectory) (context : Option<Context>) (args : CommandLineArgs) = 
+        let settings = Settings.create rootFolder args |> printAndExit
+        let mutable newContext = Context.createContext rootFolder settings args context      
         for (step, desc) in buildSteps do
             printHeader desc
             newContext <- step(newContext)
@@ -329,23 +329,23 @@ module Build =
                     | ".css" | ".scss" -> generateCss context |> ignore
                     | ".hbs" | ".md" | _ -> 
                         // Todo: In case of md there in no need to rebuild the whole site 
-                        build rootFolder (Some context) context.IsDevMode |> ignore
+                        build rootFolder (Some context) context.CommandLineArgs |> ignore
                     Server.refreshEvent.Trigger()
         !!(rootFolder.Path + "/**/*.*") |> WatchChanges watchChanges
     
     /// Overall entry point for building a website
     let buildSite (args : string []) = 
-        let buildSettings = 
+        let cmdArgs = 
             args
             |> CommandLineParser.parseArgs
             |> returnOrFail
         
         let rootFolder = 
-            buildSettings.Docs
+            cmdArgs.Docs
             |> RootDirectory.Create
             |> printAndExit
         
-        let context = build rootFolder None buildSettings.Dev
+        let context = build rootFolder None cmdArgs
         if context.BuildTasks.Serve then Server.startWebServer context.Settings.BuildOutput
         if context.BuildTasks.Watch then 
             fileWatcher rootFolder context |> ignore

@@ -5,21 +5,18 @@ open Chessie.ErrorHandling
 open System
 open System.IO
 
-type GlobalSettings(docs) = 
-    member val Docs : string = docs
-    member val Dev = false with get, set
-    member val Prod = false with get, set
+type CommandLineArgs = 
+    { Docs : string
+      Configuration : string }
 
 type Arguments = 
     | [<MandatoryAttribute>] Docs of string
-    | Dev
-    | Prod
+    | [<MandatoryAttribute>] Conf of string
     interface IArgParserTemplate with
         member this.Usage = 
             match this with
             | Docs _ -> "Specify a source directory for the documents."
-            | Dev _ -> "Run the system in developer mode. Bypass optimizations."
-            | Prod _ -> "Run the system in production mode. Do not bypass optimizations."
+            | Conf _ -> "Name of the configuration to be used for building the documents."
 
 module CommandLineParser = 
     let parser = ArgumentParser.Create<Arguments>()
@@ -33,10 +30,9 @@ module CommandLineParser =
         try 
             let results = parser.Parse(args)
             let docsDir = results.PostProcessResult(<@ Docs @>, parseDocs)
-            let gSettings = new GlobalSettings(docsDir)
-            gSettings.Dev <- results.Contains <@ Dev @>
-            gSettings.Prod <- results.Contains <@ Prod @>
-            ok gSettings
+            let conf = results.GetResult(<@ Conf @>)
+            ok { Docs = docsDir
+                 Configuration = conf }
         with e -> 
             printfn "%s" e.Message
             Environment.Exit(-1)

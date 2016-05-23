@@ -15,9 +15,9 @@ open System.Text.RegularExpressions
 [<CLIMutableAttribute>]
 type Context = 
     { Root : RootDirectory
+      CommandLineArgs : CommandLineArgs
       Settings : Settings
       BuildTasks : BuildTasks
-      IsDevMode : bool
       JSEngine : JsEngineWrapper
       HandlebarsContext : JObject
       Data : JObject
@@ -122,7 +122,7 @@ module Context =
         root
     
     /// Create the global context which is shared across the application
-    let createContext (rd : RootDirectory) (settings : Settings) (devMode : bool) (existingContext : Context option) = 
+    let createContext (rd : RootDirectory) (settings : Settings) (args : CommandLineArgs) (existingContext : Context option) = 
         let partials = getFileMap rd SpecialDir.partials Extension.hbs
         let layouts = getFileMap rd SpecialDir.layouts Extension.hbs
         let pages = scanAllPages rd settings layouts
@@ -130,11 +130,9 @@ module Context =
         
         let temp = 
             { Root = rd
+              CommandLineArgs = args
               Settings = settings
-              BuildTasks = 
-                  if devMode then settings.Development
-                  else settings.Production
-              IsDevMode = devMode
+              BuildTasks = settings.BuildConfiguration.[args.Configuration]
               JSEngine = 
                   match existingContext with
                   | Some c -> c.JSEngine

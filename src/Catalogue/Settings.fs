@@ -4,6 +4,7 @@ open Chessie.ErrorHandling
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 open System
+open System.Collections.Generic
 open System.ComponentModel
 open System.IO
 open YamlDotNet.Serialization
@@ -65,26 +66,22 @@ type Area =
           Order = 0 }
 
 /// Represents the build tasks that can be performed by the server
-type BuildTasks() = 
-    member val GenerateSiteMap = true with get, set
-    member val EnableSearch = true with get, set
-    member val MinifyJS = true with get, set
-    member val ConcatJS = true with get, set
-    member val MinifyHTML = true with get, set
-    member val MinifyCSS = true with get, set
-    member val CompileSCSS = true with get, set
-    member val Serve = true with get, set
+type BuildTasks() =  
+    member val GenerateSiteMap = false with get, set
+    member val EnableSearch = false with get, set
+    member val MinifyJS = false with get, set
+    member val ConcatJS = false with get, set
+    member val MinifyHTML = false with get, set
+    member val MinifyCSS = false with get, set
+    member val CompileSCSS = false with get, set
+    member val Serve = false with get, set
     member val LiveReload = false with get, set
     member val Watch = false with get, set
     
     /// Whether to generate all the docs as a single page document which can be
     /// used for creating books or searching. 
-    member val GenerateSinglePageDoc = true with get, set
+    member val GenerateSinglePageDoc = false with get, set
     
-    static member DevSettings() = 
-        new BuildTasks(MinifyJS = false, ConcatJS = true, MinifyHTML = false, MinifyCSS = false, LiveReload = true, 
-                       Watch = true)
-
 /// Main settings object which represents the )settings.yml object.
 /// Note: This could have been easily a record type but there was too
 /// much work involved in setting the default field values during
@@ -111,10 +108,10 @@ type Settings() =
     [<JsonIgnoreAttribute>]
     member val Areas = [| Area.HomeArea |] with get, set
     
-    member val Development = BuildTasks.DevSettings() with get, set
+    /// Defines all the build configurations possible
+    member val BuildConfiguration : Dictionary<string, BuildTasks> = new Dictionary<string, BuildTasks>() with get, set
     member val HttpServerPort = 8080 with get, set
-    member val Production = new BuildTasks() with get, set
-
+    
     (*SASS related settings*)
     member val MainCssFile = "/assets/css/site.scss" with get, set
     member val MainJsFile = "/assets/js/site.js" with get, set
@@ -127,16 +124,19 @@ module Settings =
             "Unable to read the '_settings.yaml' file at: %s. Check if the file is accessible and formatted correctly."
     
     /// Validate the given settings object
-    let validate (settings : Settings) = 
+    let validate (args : CommandLineArgs) (settings : Settings) = 
         let buildFolderPath = getAbsolutePath settings.BuildOutput
         settings.BuildOutput <- buildFolderPath
         Directory.CreateDirectory buildFolderPath |> ignore
-        //emptyDir buildFolderPath
-        settings.Areas |> Array.iteri (fun index area -> area.Order <- index)
-        ok settings
+        //Check if the passed build configuration exists
+        if not <| settings.BuildConfiguration.ContainsKey(args.Configuration) then
+            fail <| sprintf "The passed build configuration: '%s' is not defined in the '_ settings.yaml' file." args.Configuration
+        else
+            settings.Areas |> Array.iteri (fun index area -> area.Order <- index)
+            ok settings
     
-    let create (rootDir : RootDirectory) = 
+    let create (rootDir : RootDirectory) (args: CommandLineArgs) = 
         readFile (rootDir.Path +/ fileName)
         |> appendError (fileReadError rootDir.Path)
         |> Trial.bind (Yaml.deserialize<Settings> >> appendError (fileReadError rootDir.Path))
-        |> Trial.bind (validate)
+        |> Trial.bind (validate args)
