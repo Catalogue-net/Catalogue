@@ -28,8 +28,9 @@ module PrintHelpers =
     let printInfo fmt = cprintfn ConsoleColor.White fmt
     let log fmt = cprintfn ConsoleColor.White fmt
 
-    let printAndExit (error) = 
-        printError error
+    /// Print error and exit application
+    let printAndExit error = 
+        printError "%s" error
         Environment.Exit(-1)
     
     /// Traces a line
@@ -43,16 +44,6 @@ module PrintHelpers =
     /// Traces an exception details (in red)
     let printException (ex : Exception) = exceptionAndInnersToString ex |> printError "%s"
     
-    /// Print error and exit application
-    let printExit fmt = 
-        printError fmt
-        Environment.Exit(-1)
-    
-    let exit() = 
-        printLine()
-        printError "Terminating the application"
-        Environment.Exit(-1)
-
 [<AutoOpenAttribute>]
 module ResultTypeHelpers = 
     /// Append a new error to the error results. This is helpful when
@@ -64,13 +55,13 @@ module ResultTypeHelpers =
     
     /// Overall terminator which exits the application in case of 
     /// critical error
-    let inline printAndExit (result : Result<_, _>) = 
-        let inline raiseExn msgs = 
+    let printAndExit (result : Result<_, _>) = 
+        let raiseExn msgs = 
             msgs
             |> Seq.map (sprintf "%O")
             |> String.concat (Environment.NewLine + "\t")
             |> fun x -> 
-                exit()
+                printAndExit x
                 x
             /// Note: This is done to make the F# type inference work correctly. Without the
             /// below it thinks we are returning unit
