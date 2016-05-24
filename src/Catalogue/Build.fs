@@ -312,6 +312,8 @@ module Build =
     let build (rootFolder : RootDirectory) (context : Option<Context>) (args : CommandLineArgs) = 
         let settings = Settings.create rootFolder args |> printAndExit
         let mutable newContext = Context.createContext rootFolder settings args context      
+        if newContext.BuildTasks.CleanOutputDir then
+            CleanDir newContext.Settings.BuildOutput
         for (step, desc) in buildSteps do
             printHeader desc
             newContext <- step(newContext)
