@@ -349,5 +349,7 @@ module Build =
         if context.BuildTasks.Serve then Server.startWebServer context.Settings.BuildOutput
         if context.BuildTasks.Watch then 
             fileWatcher rootFolder context |> ignore
+        // Only wait for input in case server is started
+        if context.BuildTasks.Watch || context.BuildTasks.Serve then
             Console.ReadKey() |> ignore
-        else Console.ReadKey() |> ignore
+
