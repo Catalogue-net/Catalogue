@@ -77,7 +77,8 @@ type BuildTasks() =
     member val Serve = false with get, set
     member val LiveReload = false with get, set
     member val Watch = false with get, set
-    
+    member val CleanOutputDir = false with get, set
+
     /// Whether to generate all the docs as a single page document which can be
     /// used for creating books or searching. 
     member val GenerateSinglePageDoc = false with get, set
