@@ -123,6 +123,8 @@ module Context =
     
     /// Create the global context which is shared across the application
     let createContext (rd : RootDirectory) (settings : Settings) (args : CommandLineArgs) (existingContext : Context option) = 
+        // Reset the exit code to success
+        Environment.ExitCode <- successExitCode
         let partials = getFileMap rd SpecialDir.partials Extension.hbs
         let layouts = getFileMap rd SpecialDir.layouts Extension.hbs
         let pages = scanAllPages rd settings layouts

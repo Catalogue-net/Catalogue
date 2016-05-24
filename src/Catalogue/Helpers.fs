@@ -11,6 +11,10 @@ open Fake
 
 [<AutoOpen>]
 module PrintHelpers = 
+    let successExitCode = 0
+    let errorExitCode = 1
+    let warningExitCode = 2
+
     // Colored printf
     /// Taken from : https://blogs.msdn.microsoft.com/chrsmith/2008/10/01/f-zen-colored-printf/       
     let cprintfn c fmt = 
@@ -22,8 +26,12 @@ module PrintHelpers =
             finally
                 System.Console.ForegroundColor <- old) fmt
     
-    let printWarning fmt = cprintfn ConsoleColor.Yellow fmt
-    let printError fmt = cprintfn ConsoleColor.Red fmt
+    let printWarning fmt = 
+        Environment.ExitCode <- warningExitCode
+        cprintfn ConsoleColor.Yellow fmt
+    let printError fmt = 
+        Environment.ExitCode <- errorExitCode
+        cprintfn ConsoleColor.Red fmt
     let printVerbose fmt = cprintfn ConsoleColor.Green fmt
     let printInfo fmt = cprintfn ConsoleColor.White fmt
     let log fmt = cprintfn ConsoleColor.White fmt
@@ -31,7 +39,7 @@ module PrintHelpers =
     /// Print error and exit application
     let printAndExit error = 
         printError "%s" error
-        Environment.Exit(-1)
+        Environment.Exit(errorExitCode)
     
     /// Traces a line
     let printLine() = printVerbose "---------------------------------------------------------------------"

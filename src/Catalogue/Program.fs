@@ -20,4 +20,5 @@ let main argv =
 """
     log "Catalogue v%s" <| Assembly.GetExecutingAssembly().GetName().Version.ToString()
     Build.buildSite (argv)
-    0
+    printVerbose "Exiting application with code: %i" Environment.ExitCode
+    Environment.ExitCode
