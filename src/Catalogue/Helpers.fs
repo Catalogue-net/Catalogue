@@ -79,6 +79,7 @@ module ResultTypeHelpers =
 [<AutoOpen>]
 module IOHelpers = 
     let rootPath = AppDomain.CurrentDomain.BaseDirectory
+    let startDirectory = Environment.CurrentDirectory
     let (+/) (path1 : string) (path2 : string) = Path.Combine([| path1; path2 |])
     
     let dirExists (path : string) = 
@@ -119,9 +120,9 @@ module IOHelpers =
                     delete path
         delete path
     
-    let getAbsolutePath (path : string) = 
+    let getAbsolutePath (path : string) (fromStartDirectory: bool) = 
         if Path.IsPathRooted path then path
-        else Path.GetFullPath((new Uri(rootPath +/ path)).LocalPath)
+        else Path.GetFullPath((new Uri(if fromStartDirectory then startDirectory +/ path else rootPath +/ path)).LocalPath)
     
     /// Reads a given file and returns the result wrapped in a Result type    
     let readFile (path : string) = 

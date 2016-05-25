@@ -22,7 +22,7 @@ module CommandLineParser =
     let parser = ArgumentParser.Create<Arguments>()
     
     let parseDocs d = 
-        let root = getAbsolutePath d
+        let root = getAbsolutePath d true
         if not <| Directory.Exists(root) then failwith "Invalid 'docs' directory."
         root
     

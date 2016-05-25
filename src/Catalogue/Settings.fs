@@ -31,7 +31,7 @@ type RootDirectory =
     | Dir of DirectoryInfo
     
     static member Create(path : string) = 
-        let root = getAbsolutePath path
+        let root = getAbsolutePath path true
         let dirInfo = new DirectoryInfo(root)
         if dirInfo.Exists then ok <| Dir(dirInfo)
         else fail <| sprintf "Passed 'RootDirectory' not found: %s" path
@@ -126,7 +126,7 @@ module Settings =
     
     /// Validate the given settings object
     let validate (args : CommandLineArgs) (settings : Settings) = 
-        let buildFolderPath = getAbsolutePath settings.BuildOutput
+        let buildFolderPath = getAbsolutePath settings.BuildOutput true
         settings.BuildOutput <- buildFolderPath
         Directory.CreateDirectory buildFolderPath |> ignore
         //Check if the passed build configuration exists

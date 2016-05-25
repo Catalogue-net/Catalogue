@@ -19,6 +19,7 @@ let main argv =
                               |___/            
 """
     log "Catalogue v%s" <| Assembly.GetExecutingAssembly().GetName().Version.ToString()
+    printVerbose "Start directory: %s" Environment.CurrentDirectory
     Build.buildSite (argv)
     printVerbose "Exiting application with code: %i" Environment.ExitCode
     Environment.ExitCode
