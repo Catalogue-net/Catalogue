@@ -83,6 +83,15 @@ type BuildTasks() =
     /// used for creating books or searching. 
     member val GenerateSinglePageDoc = false with get, set
     
+    /// Terminates the build forcefully at the end. This is useful in case
+    /// one needs to start the web server, then perform tasks using post
+    /// build script and terminate the server once the job ends.
+    /// This is also essential for build servers.
+    member val ForceExit = false with get, set
+
+    /// Defines if the post build script if present should be executed or not?
+    member val ExecutePostBuildScript = false with get, set
+
 /// Main settings object which represents the )settings.yml object.
 /// Note: This could have been easily a record type but there was too
 /// much work involved in setting the default field values during

@@ -351,7 +351,18 @@ module Build =
         if context.BuildTasks.Serve then Server.startWebServer context.Settings.BuildOutput
         if context.BuildTasks.Watch then 
             fileWatcher rootFolder context |> ignore
-        // Only wait for input in case server is started
-        if context.BuildTasks.Watch || context.BuildTasks.Serve then
+        if File.Exists(rootFolder.Path +/ "_postbuild.bat") && context.BuildTasks.ExecutePostBuildScript then
+            printVerbose "Found '_postbuild.bat' in the source directory. Executing post build tasks."
+            // Only update the exit code if we haven't encountered an error so far.
+            match Shell.Exec(rootFolder.Path +/ "_postbuild.bat") with
+            | exitCode when exitCode > 0 -> Environment.ExitCode <- exitCode
+            | _ -> ()
+        else
+            printVerbose "No '_postbuild.bat' in the source directory or 'ExecutePostBuildScript' is set to false."
+        // Only wait for input in case server is started and force exit is not passed.
+        if (context.BuildTasks.Watch || context.BuildTasks.Serve) && not context.BuildTasks.ForceExit then
+            printVerbose "HTTP server is running at port:%i. Press any key to terminate the application." context.Settings.HttpServerPort
             Console.ReadKey() |> ignore
+        
+            
 
