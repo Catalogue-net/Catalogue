@@ -270,8 +270,9 @@ module Build =
         if context.BuildTasks.GenerateSiteMap then 
             context.Pages
             |> Array.map (fun page -> 
-                   let temp = sprintf "%s/%s" context.Settings.SiteUrl page.Link
-                   temp.Replace("//", "/").Replace("//", "/"))
+                   let temp = page.Link.Replace("//", "/").Replace("//", "/")
+                   sprintf "%s%s" context.Settings.SiteUrl temp
+                   )
             |> fun i -> File.WriteAllLines(context.Settings.BuildOutput +/ "sitemap.txt", i)
         context
     
